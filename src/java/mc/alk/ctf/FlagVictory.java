@@ -1,13 +1,22 @@
 package mc.alk.ctf;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+
 import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.objects.messaging.MatchMessageHandler;
 import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
 import mc.alk.arena.events.matches.messages.MatchIntervalMessageEvent;
 import mc.alk.arena.events.matches.messages.MatchTimeExpiredMessageEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.ArenaEventHandler;
-import mc.alk.arena.objects.events.EventPriority;
+import mc.alk.arena.objects.events.ArenaEventPriority;
+import mc.alk.arena.objects.messaging.MatchMessageHandler;
 import mc.alk.arena.objects.scoreboard.ArenaDisplaySlot;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
@@ -15,14 +24,6 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesLeaderRanking;
 import mc.alk.arena.util.TimeUtil;
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 public class FlagVictory extends VictoryCondition implements DefinesLeaderRanking{
 
@@ -44,7 +45,7 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 	}
 
 	public String getScoreString() {
-		Map<String,String> map = new HashMap<String,String>();
+		Map<String,String> map = new HashMap<>();
 		map.put("{prefix}", match.getParams().getPrefix());
 		String teamstr = mmh.getMessage("CaptureTheFlag.teamscore");
 		String separator = mmh.getMessage("CaptureTheFlag.teamscore_separator");
@@ -56,7 +57,7 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
         for (ArenaTeam team : teams) {
             if (!first) sb.append(separator);
             Flag f = teamFlags.get(team);
-            Map<String, String> map2 = new HashMap<String, String>();
+            Map<String, String> map2 = new HashMap<>();
             map2.put("{team}", team.getDisplayName());
             map2.put("{captures}", scores.getPoints(team) + "");
             map2.put("{maxcaptures}", capturesToWin + "");
@@ -88,14 +89,14 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 		return scores.addPoints(team, 1);
 	}
 
-	@ArenaEventHandler(priority=EventPriority.HIGHEST)
+	@ArenaEventHandler(priority=ArenaEventPriority.HIGHEST)
 	public void onMatchFindCurrentLeaderEvent(MatchFindCurrentLeaderEvent event){
 		event.setResult(scores.getMatchResult(match));
 	}
 
 	@ArenaEventHandler
 	public void onMatchIntervalMessage(MatchIntervalMessageEvent event){
-		Map<String,String> map = new HashMap<String,String>();
+		Map<String,String> map = new HashMap<>();
 		map.put("{prefix}", match.getParams().getPrefix());
 		map.put("{timeleft}", TimeUtil.convertSecondsToString(event.getTimeRemaining()));
 		map.put("{score}", getScoreString());
@@ -105,7 +106,7 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 	@ArenaEventHandler
 	public void onMatchTimeExpiredMessage(MatchTimeExpiredMessageEvent event){
 		StringBuilder sb = new StringBuilder();
-		Map<String,String> map = new HashMap<String,String>();
+		Map<String,String> map = new HashMap<>();
 		match.setMatchResult(scores.getMatchResult(match));
 		map.put("{prefix}", match.getParams().getPrefix());
 		String node;

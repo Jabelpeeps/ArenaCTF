@@ -1,16 +1,16 @@
 package mc.alk.ctf;
 
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
+
 import mc.alk.arena.BattleArena;
+import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.StateController;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.arena.util.Log;
 
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
-
 public class CTF extends JavaPlugin{
 	static CTF plugin;
-    static final int bukkitID = 47869; /// https://api.curseforge.com/servermods/projects?search=arenactf
 
 	@Override
 	public void onEnable(){
@@ -25,7 +25,8 @@ public class CTF extends JavaPlugin{
 		/// Register our competition
 		VictoryType.register(FlagVictory.class, this);
         StateController.register(CTFTransition.class);
-		BattleArena.registerCompetition(this, "CaptureTheFlag", "ctf", CTFArena.class, new CTFExecutor());
+        APIRegistrationController.registerCompetition( 
+                        this, "CaptureTheFlag", "ctf", BattleArena.createArenaFactory( CTFArena.class), new CTFExecutor());
         Log.info("[" + getName()+ "] v" + getDescription().getVersion()+ " enabled!");
 	}
 

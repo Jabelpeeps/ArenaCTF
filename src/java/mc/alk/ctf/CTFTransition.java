@@ -14,7 +14,7 @@ public enum CTFTransition implements CompetitionTransition {
     int globalOrdinal;
 
     CTFTransition(String name) {
-        globalOrdinal = StateController.register(this);
+        globalOrdinal = StateController.register(this.getClass());
         this.name = name;
     }
 

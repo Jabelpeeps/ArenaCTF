@@ -1,17 +1,14 @@
 package mc.alk.ctf;
 
-import mc.alk.arena.BattleArena;
-import mc.alk.arena.controllers.PlayerStoreController;
-import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.events.ArenaEventHandler;
-import mc.alk.arena.objects.messaging.MatchMessageHandler;
-import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.victoryconditions.VictoryCondition;
-import mc.alk.arena.serializers.Persist;
-import mc.alk.arena.util.Log;
-import mc.alk.arena.util.TeamUtil;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -28,14 +25,18 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import mc.alk.arena.controllers.PlayerController;
+import mc.alk.arena.controllers.PlayerStoreController;
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.events.ArenaEventHandler;
+import mc.alk.arena.objects.messaging.MatchMessageHandler;
+import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.objects.victoryconditions.VictoryCondition;
+import mc.alk.arena.serializers.Persist;
+import mc.alk.arena.util.Log;
+import mc.alk.arena.util.TeamUtil;
 
 public class CTFArena extends Arena {
     public static final boolean DEBUG = false;
@@ -47,14 +48,14 @@ public class CTFArena extends Arena {
      * Save these flag spawns with the rest of the arena information
      */
     @Persist
-    final HashMap<Integer,Location> flagSpawns = new HashMap<Integer,Location>();
+    final HashMap<Integer,Location> flagSpawns = new HashMap<>();
 
     /// The following variables should be reinitialized and set up every match
     FlagVictory scores;
 
-    final Map<Integer, Flag> flags = new ConcurrentHashMap<Integer, Flag>();
+    final Map<Integer, Flag> flags = new ConcurrentHashMap<>();
 
-    final ConcurrentHashMap<ArenaTeam, Flag> teamFlags = new ConcurrentHashMap<ArenaTeam, Flag>();
+    final ConcurrentHashMap<ArenaTeam, Flag> teamFlags = new ConcurrentHashMap<>();
 
     public static int capturesToWin = 3;
 
@@ -62,11 +63,11 @@ public class CTFArena extends Arena {
 
     Integer timerid, compassRespawnId, flagCheckId;
 
-    Map<Flag, Integer> respawnTimers = new HashMap<Flag,Integer>();
+    Map<Flag, Integer> respawnTimers = new HashMap<>();
 
-    final Map<ArenaTeam, Long> lastCapture = new ConcurrentHashMap<ArenaTeam, Long>();
+    final Map<ArenaTeam, Long> lastCapture = new ConcurrentHashMap<>();
 
-    final Set<Material> flagMaterials = new HashSet<Material>();
+    final Set<Material> flagMaterials = new HashSet<>();
 
     Random rand = new Random();
     MatchMessageHandler mmh;
@@ -239,7 +240,7 @@ public class CTFArena extends Arena {
 
 
     private Map<String, String> getCaptureParams() {
-        Map<String,String> params = new HashMap<String,String>();
+        Map<String,String> params = new HashMap<>();
         params.put("{prefix}", getMatch().getParams().getPrefix());
         params.put("{maxcaptures}", capturesToWin+"");
         return params;
@@ -285,7 +286,7 @@ public class CTFArena extends Arena {
                 || event.getFrom().getBlockZ() != event.getTo().getBlockZ())
                 || !flags.containsKey(event.getPlayer().getEntityId())){
             return;}
-        if (this.getMatchState() != MatchState.ONSTART)
+        if (this.getState() != MatchState.ONSTART)
             return;
         ArenaTeam t = getTeam(event.getPlayer());
         Flag f = teamFlags.get(t);
@@ -297,13 +298,16 @@ public class CTFArena extends Arena {
             /// and check the last capture time
             if (lastc != null && System.currentTimeMillis() - lastc < TIME_BETWEN_CAPTURES){
                 return;
-            } else {
-                lastCapture.put(t, System.currentTimeMillis());
             }
-            ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
+            lastCapture.put(t, System.currentTimeMillis());
+            
+            ArenaPlayer ap = PlayerController.toArenaPlayer(event.getPlayer().getUniqueId());
             /// for some reason sometimes its not cleared in removeFlags
             /// so do it explicitly now
-            try{event.getPlayer().getInventory().remove(f.is);}catch(Exception e){ /* do nothing*/}
+
+            event.getPlayer().getInventory().remove(f.is);
+ 
+            
             if (!teamScored(t,ap)){
                 removeFlag(capturedFlag);
                 spawnFlag(capturedFlag);
@@ -352,7 +356,7 @@ public class CTFArena extends Arena {
 
     private void removeFlag(Flag flag){
         if (flag.ent instanceof Player){
-            PlayerStoreController.removeItem(BattleArena.toArenaPlayer((Player) flag.ent), flag.is);
+            PlayerStoreController.removeItem(PlayerController.toArenaPlayer((Player) flag.ent), flag.is);
         } else {
             flag.ent.remove();
         }
@@ -360,7 +364,7 @@ public class CTFArena extends Arena {
     private void playerReturnedFlag(Player player, Flag flag) {
         flags.remove(flag.ent.getEntityId());
         spawnFlag(flag);
-        performTransition(CTFTransition.ONFLAGRETURN,BattleArena.toArenaPlayer(player));
+        performTransition(CTFTransition.ONFLAGRETURN,PlayerController.toArenaPlayer(player));
     }
 
     private void playerPickedUpFlag(Player player, Flag flag) {
@@ -370,12 +374,12 @@ public class CTFArena extends Arena {
         flags.put(player.getEntityId(), flag);
         cancelFlagRespawnTimer(flag);
         if (flag.getEntity() instanceof Player)
-            performTransition(CTFTransition.ONFLAGPICKUP,BattleArena.toArenaPlayer(player));
+            performTransition(CTFTransition.ONFLAGPICKUP,PlayerController.toArenaPlayer(player));
     }
 
     private void playerDroppedFlag(Flag flag, Item item) {
         if (flag.getEntity() instanceof Player)
-            performTransition(CTFTransition.ONFLAGDROP,BattleArena.toArenaPlayer((Player)flag.getEntity()));
+            performTransition(CTFTransition.ONFLAGDROP,PlayerController.toArenaPlayer((Player)flag.getEntity()));
 
         flags.remove(flag.ent.getEntityId());
         flag.setEntity(item);
@@ -456,7 +460,7 @@ public class CTFArena extends Arena {
 
     @Override
     public List<String> getInvalidReasons(){
-        List<String> reasons = new ArrayList<String>();
+        List<String> reasons = new ArrayList<>();
         if (flagSpawns.size() < 2){
             reasons.add("You need to add at least 2 flags!");}
         reasons.addAll(super.getInvalidReasons());
