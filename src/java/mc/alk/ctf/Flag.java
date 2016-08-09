@@ -8,9 +8,9 @@ import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.util.InventoryUtil;
-import mc.alk.arena.util.Log;
-import mc.alk.arena.util.SerializerUtil;
+import mc.alk.util.InventoryUtil;
+import mc.alk.util.Log;
+import mc.alk.util.SerializerUtil;
 
 public class Flag {
 	static int count = 0;

@@ -35,8 +35,8 @@ import mc.alk.arena.objects.messaging.MatchMessageHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 import mc.alk.arena.serializers.Persist;
-import mc.alk.arena.util.Log;
-import mc.alk.arena.util.TeamUtil;
+import mc.alk.util.Log;
+import mc.alk.util.TeamUtil;
 
 public class CTFArena extends Arena {
     public static final boolean DEBUG = false;

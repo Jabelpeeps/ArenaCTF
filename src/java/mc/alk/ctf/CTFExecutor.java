@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 import mc.alk.arena.executors.CustomCommandExecutor;
 import mc.alk.arena.executors.MCCommand;
 import mc.alk.arena.serializers.ArenaSerializer;
-import mc.alk.arena.util.MessageUtil;
+import mc.alk.util.MessageUtil;
 
 public class CTFExecutor extends CustomCommandExecutor{
 
