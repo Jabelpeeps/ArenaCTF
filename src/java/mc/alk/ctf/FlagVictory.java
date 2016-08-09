@@ -9,10 +9,10 @@ import java.util.TreeMap;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import mc.alk.arena.competition.match.Match;
+import mc.alk.arena.competition.Match;
 import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
-import mc.alk.arena.events.matches.messages.MatchIntervalMessageEvent;
-import mc.alk.arena.events.matches.messages.MatchTimeExpiredMessageEvent;
+import mc.alk.arena.events.matches.MatchIntervalMessageEvent;
+import mc.alk.arena.events.matches.MatchTimeExpiredMessageEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.ArenaEventPriority;
@@ -32,11 +32,11 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 	MatchMessageHandler mmh;
 	Map<ArenaTeam, Flag> teamFlags;
 
-	public FlagVictory(Match match) {
-		super(match);
+	public FlagVictory(Match _match) {
+		super(_match);
 		this.scores = new ArenaObjective("FlagCaptures", "Capture the Flag");
 		scores.setDisplayName(ChatColor.GOLD+"Flag Captures");
-		ArenaScoreboard scoreboard = match.getScoreboard();
+		ArenaScoreboard scoreboard = _match.getScoreboard();
 		scores.setDisplaySlot(ArenaDisplaySlot.SIDEBAR);
 		scoreboard.addObjective(scores);
 
@@ -50,23 +50,30 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 		String teamstr = mmh.getMessage("CaptureTheFlag.teamscore");
 		String separator = mmh.getMessage("CaptureTheFlag.teamscore_separator");
 		StringBuilder sb = new StringBuilder();
+		
 		List<ArenaTeam> teams = match.getTeams();
 		if (teams == null)
 			return "";
 		boolean first = true;
+		
         for (ArenaTeam team : teams) {
+            
             if (!first) sb.append(separator);
+            
             Flag f = teamFlags.get(team);
             Map<String, String> map2 = new HashMap<>();
             map2.put("{team}", team.getDisplayName());
             map2.put("{captures}", scores.getPoints(team) + "");
             map2.put("{maxcaptures}", capturesToWin + "");
             String holder;
+            
             if (f.isHome()) {
                 holder = mmh.getMessage("CaptureTheFlag.flaghome");
-            } else if (!(f.getEntity() instanceof Player)) {
+            } 
+            else if (!(f.getEntity() instanceof Player)) {
                 holder = mmh.getMessage("CaptureTheFlag.flagfloor");
-            } else {
+            } 
+            else {
                 Player p = (Player) f.getEntity();
                 holder = mmh.getMessage("CaptureTheFlag.flagperson") + p.getDisplayName();
             }
@@ -95,53 +102,55 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 	}
 
 	@ArenaEventHandler
-	public void onMatchIntervalMessage(MatchIntervalMessageEvent event){
+	public void onMatchIntervalMessage( MatchIntervalMessageEvent event ) {
+	    
 		Map<String,String> map = new HashMap<>();
-		map.put("{prefix}", match.getParams().getPrefix());
-		map.put("{timeleft}", TimeUtil.convertSecondsToString(event.getTimeRemaining()));
-		map.put("{score}", getScoreString());
-		event.setMatchMessage(mmh.getMessage("CaptureTheFlag.time_remaining", map));
+		map.put( "{prefix}" , match.getParams().getPrefix() );
+		map.put( "{timeleft}" , TimeUtil.convertSecondsToString( event.getTimeRemaining() ) );
+		map.put( "{score}" , getScoreString() );
+		
+		event.setMatchMessage( mmh.getMessage( "CaptureTheFlag.time_remaining", map ) );
 	}
 
 	@ArenaEventHandler
-	public void onMatchTimeExpiredMessage(MatchTimeExpiredMessageEvent event){
+	public void onMatchTimeExpiredMessage( MatchTimeExpiredMessageEvent event ) {
 		StringBuilder sb = new StringBuilder();
 		Map<String,String> map = new HashMap<>();
-		match.setMatchResult(scores.getMatchResult(match));
-		map.put("{prefix}", match.getParams().getPrefix());
+		match.setMatchResult( scores.getMatchResult(match) );
+		map.put( "{prefix}", match.getParams().getPrefix() );
+		
 		String node;
-		switch(match.getResult().getResult()){
+		switch( match.getResult().getResult() ) {
 		case WIN:
-			for (ArenaTeam t: match.getResult().getVictors()){
-				sb.append(t.getDisplayName()).append(" ");
+			for ( ArenaTeam t : match.getResult().getVictors() ){
+				sb.append( t.getDisplayName() ).append(" ");
 			}
 			node = "CaptureTheFlag.time_expired_win";
 			break;
 		case DRAW:
-			for (ArenaTeam t: match.getResult().getDrawers()){
-				sb.append(t.getDisplayName()).append(" ");
+			for ( ArenaTeam t : match.getResult().getDrawers() ) {
+				sb.append( t.getDisplayName() ).append(" ");
 			}
 			node = "CaptureTheFlag.time_expired_draw";
 			break;
 		default:
-			/// not really sure...
 			node = "CaptureTheFlag.time_expired_draw";
 			break;
 		}
-		map.put("{teams}", sb.toString());
-		event.setMatchMessage(mmh.getMessage(node, map));
+		map.put( "{teams}", sb.toString() );
+		event.setMatchMessage( mmh.getMessage( node, map ) );
 	}
 
-	public void setFlags(Map<ArenaTeam, Flag> teamFlags) {
-		this.teamFlags = teamFlags;
+	public void setFlags( Map<ArenaTeam, Flag> _teamFlags ) {
+		teamFlags = _teamFlags;
 	}
 
-	public void setNumCaptures(int capturesToWin) {
-		this.capturesToWin = capturesToWin;
+	public void setNumCaptures( int _capturesToWin ) {
+		capturesToWin = _capturesToWin;
 	}
 
-	public void setMessageHandler(MatchMessageHandler mmh) {
-		this.mmh = mmh;
+	public void setMessageHandler( MatchMessageHandler _mmh ) {
+		mmh = _mmh;
 	}
 
 	@Override
