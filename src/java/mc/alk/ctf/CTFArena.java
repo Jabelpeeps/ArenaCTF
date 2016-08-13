@@ -122,41 +122,35 @@ public class CTFArena extends Arena {
         }
         scores.setFlags(teamFlags);
         /// Schedule flame effects
-        timerid = Bukkit.getScheduler().scheduleSyncRepeatingTask(CTF.getSelf(), new Runnable(){
-            @Override
-            public void run() {
-                boolean extraeffects = (runcount++ % 2 == 0);
-                for (Flag flag: flags.values()){
-                    Location l = flag.getCurrentLocation();
-                    l.getWorld().playEffect(l, Effect.MOBSPAWNER_FLAMES, 0);
-                    if (extraeffects){
-                        l = l.clone();
-                        l.setX(l.getX() + rand.nextInt(4)-2);
-                        l.setZ(l.getZ() + rand.nextInt(4)-2);
-                        l.setY(l.getY() + rand.nextInt(2)-1);
-                        l.getWorld().playEffect(l, Effect.MOBSPAWNER_FLAMES, 0);
-                    }
-                }
-            }
-        }, 20L,20L);
+        timerid = Bukkit.getScheduler().scheduleSyncRepeatingTask(CTF.getSelf(), 
+                () -> {
+                        boolean extraeffects = (runcount++ % 2 == 0);
+                        for (Flag flag: flags.values()){
+                            Location l = flag.getCurrentLocation();
+                            l.getWorld().playEffect(l, Effect.MOBSPAWNER_FLAMES, 0);
+                            if (extraeffects){
+                                l = l.clone();
+                                l.setX(l.getX() + rand.nextInt(4)-2);
+                                l.setZ(l.getZ() + rand.nextInt(4)-2);
+                                l.setY(l.getY() + rand.nextInt(2)-1);
+                                l.getWorld().playEffect(l, Effect.MOBSPAWNER_FLAMES, 0);
+                            }
+                        }
+                }, 20L,20L);
 
         /// Schedule flag checks
-        flagCheckId = Bukkit.getScheduler().scheduleSyncRepeatingTask(CTF.getSelf(), new Runnable(){
-            @Override
-            public void run() {
-                for (Flag flag: flags.values()){
-                    if (flag.isHome() && !flag.isValid()){
-                        spawnFlag(flag);
-                    }
-                }
-            }
-        }, 0L, 6*20L);
+        flagCheckId = Bukkit.getScheduler().scheduleSyncRepeatingTask(CTF.getSelf(), 
+                () -> { 
+                        for (Flag flag: flags.values()) {
+                            if (flag.isHome() && !flag.isValid()) {
+                                spawnFlag(flag);
+                            }
+                        }
+                }, 0L, 6*20L);
 
         /// Schedule compass Updates
-        compassRespawnId = Bukkit.getScheduler().scheduleSyncRepeatingTask(CTF.getSelf(), new Runnable(){
-            @Override
-            public void run() {updateCompassLocations();}
-        }, 0L, 5*20L);
+        compassRespawnId = Bukkit.getScheduler().scheduleSyncRepeatingTask(
+                                CTF.getSelf(), () -> updateCompassLocations() , 0L, 5*20L);
     }
 
     private void updateCompassLocations() {
@@ -222,7 +216,8 @@ public class CTFArena extends Arena {
                 event.getItem().remove();
                 t.sendMessage(mmh.getMessage("CaptureTheFlag.player_returned_flag", params));
             }
-        } else {
+        } 
+        else {
             /// Give the enemy the flag
             playerPickedUpFlag(p, flag);
 
@@ -403,15 +398,14 @@ public class CTFArena extends Arena {
 
     private void startFlagRespawnTimer(final Flag flag) {
         cancelFlagRespawnTimer(flag);
-        Integer timerid = Bukkit.getScheduler().scheduleSyncDelayedTask(CTF.getSelf(), new Runnable(){
-            @Override
-            public void run() {
-                spawnFlag(flag);
-                ArenaTeam team = flag.getTeam();
-                Map<String,String> params = getCaptureParams();
-                team.sendMessage(mmh.getMessage("CaptureTheFlag.returned_flag",params));
-            }
-        }, FLAG_RESPAWN_TIMER);
+        Integer timerid = Bukkit.getScheduler().scheduleSyncDelayedTask(CTF.getSelf(), 
+                () -> {
+                        spawnFlag(flag);
+                        ArenaTeam team = flag.getTeam();
+                        Map<String,String> params = getCaptureParams();
+                        team.sendMessage(mmh.getMessage("CaptureTheFlag.returned_flag",params));           
+                }, FLAG_RESPAWN_TIMER);
+        
         respawnTimers.put(flag, timerid);
     }
 
