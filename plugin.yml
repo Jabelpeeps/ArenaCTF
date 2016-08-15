@@ -8,3 +8,11 @@ main: mc.alk.ctf.CTF
 commands:
     ctf:
         aliases: [captureTheFlag]
+permissions:
+    ctf.*:
+        default: op
+    battlearena.ctf.*:
+        default: op
+    arena.join.ctf:
+        default: true
+        

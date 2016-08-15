@@ -7,25 +7,24 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.util.InventoryUtil;
 import mc.alk.util.Log;
 import mc.alk.util.SerializerUtil;
 
+@RequiredArgsConstructor
 public class Flag {
+    @Getter final ArenaTeam team; 
+    final ItemStack is; /// what type of item is our flag
+    @Getter final Location homeLocation; /// our spawn location
+    
 	static int count = 0;
-	final int id = count++; /// our id
-
-	Entity ent; /// What is our flag (item or carried by player)
-
-	boolean home; /// is our flag at home
-
-	final ArenaTeam team; /// which team this flag belongs to
-
-	final ItemStack is; /// what type of item is our flag
-
-	final Location homeLocation; /// our spawn location
-
+	final int id = count++; 
+	@Getter @Setter Entity entity; /// What is our flag (item or carried by player)
+	@Getter @Setter boolean home = true; /// is our flag at home
     static Method isValidMethod;
     static boolean isValid = true;
 
@@ -37,6 +36,7 @@ public class Flag {
         try {
             final String pkg = Bukkit.getServer().getClass().getPackage().getName();
             String version = pkg.substring(pkg.lastIndexOf('.') + 1);
+            
             if (version.equalsIgnoreCase("craftbukkit")){
                 isValidMethod = Entity.class.getMethod("isDead");
                 isValid = false;
@@ -48,16 +48,7 @@ public class Flag {
         }
     }
 
-	public Flag(ArenaTeam team, ItemStack is, Location homeLocation){
-		this.team = team;
-		this.home = true;
-		this.is = is;
-		this.homeLocation = homeLocation;
-	}
-
-	public void setEntity(Entity entity) { this.ent = entity; }
-	public Location getCurrentLocation() { return ent.getLocation(); }
-	public Location getHomeLocation() { return homeLocation; }
+	public Location getCurrentLocation() { return entity.getLocation(); }
 
 	public boolean sameFlag(ItemStack is2) {
 		return is.getType() == is2.getType() && is.getDurability() == is2.getDurability();
@@ -73,27 +64,11 @@ public class Flag {
 	@Override
 	public int hashCode() { return id;}
 
-	public Entity getEntity() {
-		return ent;
-	}
-
-	public ArenaTeam getTeam() {
-		return team;
-	}
-
-	public boolean isHome() {
-		return home;
-	}
-
-	public void setHome(boolean home) {
-		this.home = home;
-	}
-
 	@Override
 	public String toString(){
 		return String.format( "[Flag %d: ent=%s, home=%s, team=%s, is=%s, homeloc=%s]",
                 				id,
-                                ent == null ? "null" : ent.getType(), 
+                                entity == null ? "null" : entity.getType(), 
                                 home,
                 				team == null ? "null" : team.getId(),
                 				is == null ? "null" : InventoryUtil.getItemString(is),
@@ -101,8 +76,9 @@ public class Flag {
 	}
 
     public boolean isValid() {
+        entity.isValid();
         try {
-            return (Boolean) isValidMethod.invoke(ent);
+            return (Boolean) isValidMethod.invoke(entity);
         } catch (Exception e) {
             e.printStackTrace();
             return true;

@@ -48,6 +48,14 @@
             <version>3.9.10.15</version>
             <scope>provided</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.10</version>
+            <scope>provided</scope>
+        </dependency>
+        
     </dependencies>
     <!-- How we will compile the plugin -->
     <build>

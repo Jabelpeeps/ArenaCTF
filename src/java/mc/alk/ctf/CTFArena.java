@@ -27,11 +27,11 @@ import org.bukkit.util.Vector;
 
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.PlayerStoreController;
+import mc.alk.arena.controllers.messaging.MatchMessager;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
 import mc.alk.arena.objects.events.ArenaEventHandler;
-import mc.alk.arena.objects.messaging.MatchMessageHandler;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 import mc.alk.arena.serializers.Persist;
@@ -52,37 +52,31 @@ public class CTFArena extends Arena {
 
     /// The following variables should be reinitialized and set up every match
     FlagVictory scores;
-
     final Map<Integer, Flag> flags = new ConcurrentHashMap<>();
-
     final ConcurrentHashMap<ArenaTeam, Flag> teamFlags = new ConcurrentHashMap<>();
-
     public static int capturesToWin = 3;
-
     int runcount = 0;
-
     Integer timerid, compassRespawnId, flagCheckId;
-
     Map<Flag, Integer> respawnTimers = new HashMap<>();
-
     final Map<ArenaTeam, Long> lastCapture = new ConcurrentHashMap<>();
-
     final Set<Material> flagMaterials = new HashSet<>();
-
     Random rand = new Random();
-    MatchMessageHandler mmh;
+    MatchMessager mmh;
 
     @Override
     public void onOpen(){
-        mmh = getMatch().getMessageHandler();
+        mmh = getMatch().getMatchMessager();
         resetVars();
         getMatch().addVictoryCondition(scores);
     }
 
     private void resetVars(){
         VictoryCondition vc = getMatch().getVictoryCondition(FlagVictory.class);
-        scores = (FlagVictory) (vc != null ? vc : new FlagVictory(getMatch()));
-        scores.setNumCaptures(capturesToWin);
+        
+        scores = (FlagVictory) (vc != null ? vc 
+                                           : new FlagVictory(getMatch()));
+        
+        scores.setCapturesToWin(capturesToWin);
         scores.setMessageHandler(mmh);
         flags.clear();
         teamFlags.clear();
@@ -142,7 +136,7 @@ public class CTFArena extends Arena {
         flagCheckId = Bukkit.getScheduler().scheduleSyncRepeatingTask(CTF.getSelf(), 
                 () -> { 
                         for (Flag flag: flags.values()) {
-                            if (flag.isHome() && !flag.isValid()) {
+                            if ( flag.isHome() && !flag.isValid() ) {
                                 spawnFlag(flag);
                             }
                         }
@@ -350,20 +344,20 @@ public class CTFArena extends Arena {
     }
 
     private void removeFlag(Flag flag){
-        if (flag.ent instanceof Player){
-            PlayerStoreController.removeItem(PlayerController.toArenaPlayer((Player) flag.ent), flag.is);
+        if (flag.entity instanceof Player){
+            PlayerStoreController.removeItem(PlayerController.toArenaPlayer((Player) flag.entity), flag.is);
         } else {
-            flag.ent.remove();
+            flag.entity.remove();
         }
     }
     private void playerReturnedFlag(Player player, Flag flag) {
-        flags.remove(flag.ent.getEntityId());
+        flags.remove(flag.entity.getEntityId());
         spawnFlag(flag);
         performTransition(CTFTransition.ONFLAGRETURN,PlayerController.toArenaPlayer(player));
     }
 
     private void playerPickedUpFlag(Player player, Flag flag) {
-        flags.remove(flag.ent.getEntityId());
+        flags.remove(flag.entity.getEntityId());
         flag.setEntity(player);
         flag.setHome(false);
         flags.put(player.getEntityId(), flag);
@@ -376,7 +370,7 @@ public class CTFArena extends Arena {
         if (flag.getEntity() instanceof Player)
             performTransition(CTFTransition.ONFLAGDROP,PlayerController.toArenaPlayer((Player)flag.getEntity()));
 
-        flags.remove(flag.ent.getEntityId());
+        flags.remove(flag.entity.getEntityId());
         flag.setEntity(item);
         flags.put(item.getEntityId(), flag);
         startFlagRespawnTimer(flag);
