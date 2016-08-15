@@ -44,7 +44,7 @@
         
         <dependency>
             <groupId>mc.alk</groupId>
-            <artifactId>BattleArena</artifactId>
+            <artifactId>BattleArena-lite</artifactId>
             <version>3.9.10.15</version>
             <scope>provided</scope>
         </dependency>
