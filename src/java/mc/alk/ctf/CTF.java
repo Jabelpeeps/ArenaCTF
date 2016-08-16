@@ -9,6 +9,9 @@ import mc.alk.arena.controllers.StateController;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
 import mc.alk.util.Log;
 
+
+
+
 public class CTF extends JavaPlugin{
 	static CTF plugin;
 
@@ -16,12 +19,8 @@ public class CTF extends JavaPlugin{
 	public void onEnable(){
 		plugin = this;
 
-		/// Save our default config.yml
 		saveDefaultConfig();
-
-		/// Read in our values from the config
 		loadConfig();
-
 		/// Register our competition
 		VictoryType.register(FlagVictory.class, this);
         StateController.register(CTFTransition.class);

@@ -8,6 +8,8 @@ import mc.alk.arena.executors.MCCommand;
 import mc.alk.arena.serializers.ArenaSerializer;
 import mc.alk.util.MessageUtil;
 
+
+
 public class CTFExecutor extends CustomCommandExecutor{
 
 	@MCCommand( cmds={"addFlag"}, admin=true )

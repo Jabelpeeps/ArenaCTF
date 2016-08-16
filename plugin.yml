@@ -3,7 +3,7 @@ version:  ${project.version}
 author: Alkarin
 
 description: Capture the flag event using Arenas
-depend: [BattleArena]
+depend: [BattleArena-lite]
 main: mc.alk.ctf.CTF
 commands:
     ctf:
