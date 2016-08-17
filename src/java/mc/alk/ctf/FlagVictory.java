@@ -131,7 +131,7 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 			}
 			node = "CaptureTheFlag.time_expired_win";
 			break;
-		case DRAW:
+		case TIE:
 			for ( ArenaTeam t : match.getMatchResult().getDrawers() ) {
 				sb.append( t.getDisplayName() ).append(" ");
 			}
