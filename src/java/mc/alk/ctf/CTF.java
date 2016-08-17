@@ -7,9 +7,7 @@ import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.StateController;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
-import mc.alk.util.Log;
-
-
+import mc.alk.arena.util.Log;
 
 
 public class CTF extends JavaPlugin{

@@ -11,9 +11,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.util.InventoryUtil;
-import mc.alk.util.Log;
-import mc.alk.util.SerializerUtil;
+import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.Log;
+import mc.alk.arena.util.SerializerUtil;
 
 @RequiredArgsConstructor
 public class Flag {

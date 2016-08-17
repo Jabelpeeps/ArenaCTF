@@ -24,7 +24,7 @@ import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesLeaderRanking;
-import mc.alk.util.TimeUtil;
+import mc.alk.arena.util.TimeUtil;
 
 public class FlagVictory extends VictoryCondition implements DefinesLeaderRanking{
 
