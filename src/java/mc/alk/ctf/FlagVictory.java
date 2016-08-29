@@ -20,13 +20,13 @@ import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.ArenaEventPriority;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
+import mc.alk.arena.objects.scoreboard.SAPIDisplaySlot;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesLeaderRanking;
-import mc.alk.arena.scoreboardapi.SAPIDisplaySlot;
 import mc.alk.arena.util.TimeUtil;
 
-public class FlagVictory extends VictoryCondition implements DefinesLeaderRanking{
+public class FlagVictory extends VictoryCondition implements DefinesLeaderRanking {
 
 	final ArenaObjective scores;
 	@Setter Integer capturesToWin;
@@ -145,17 +145,9 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 		event.setMatchMessage( mmh.getMessage( node, map ) );
 	}
 
-	public void setMessageHandler( MatchMessager _mmh ) {
-		mmh = _mmh;
-	}
-
+	public void setMessageHandler( MatchMessager _mmh ) { mmh = _mmh; }
 	@Override
-	public List<ArenaTeam> getLeaders() {
-		return scores.getLeaders();
-	}
-
+	public List<ArenaTeam> getLeaders() { return scores.getLeaders(); }
 	@Override
-	public TreeMap<?, Collection<ArenaTeam>> getRanks() {
-		return scores.getRanks();
-	}
+	public TreeMap<?, Collection<ArenaTeam>> getRanks() { return scores.getRanks(); }
 }
