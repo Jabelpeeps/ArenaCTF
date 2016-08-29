@@ -18,12 +18,12 @@ import mc.alk.arena.events.matches.MatchTimeExpiredMessageEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.ArenaEventPriority;
-import mc.alk.arena.objects.scoreboard.ArenaDisplaySlot;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesLeaderRanking;
+import mc.alk.arena.scoreboardapi.SAPIDisplaySlot;
 import mc.alk.arena.util.TimeUtil;
 
 public class FlagVictory extends VictoryCondition implements DefinesLeaderRanking{
@@ -39,7 +39,7 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 		scores.setDisplayName( ChatColor.GOLD + "Flag Captures" );
 		
 		ArenaScoreboard scoreboard = _match.getScoreboard();
-		scores.setDisplaySlot( ArenaDisplaySlot.SIDEBAR );
+		scores.setDisplaySlot( SAPIDisplaySlot.SIDEBAR );
 		scoreboard.addObjective( scores );
 
 		/// set all points to 0 so they display in Scoreboard
