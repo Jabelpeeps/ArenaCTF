@@ -11,13 +11,13 @@ import org.bukkit.entity.Player;
 
 import lombok.Setter;
 import mc.alk.arena.competition.Match;
-import mc.alk.arena.controllers.messaging.MatchMessager;
 import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
 import mc.alk.arena.events.matches.MatchIntervalMessageEvent;
 import mc.alk.arena.events.matches.MatchTimeExpiredMessageEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.ArenaEventPriority;
+import mc.alk.arena.objects.messaging.MatchMessager;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.scoreboard.SAPIDisplaySlot;
