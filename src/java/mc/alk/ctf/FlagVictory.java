@@ -17,7 +17,7 @@ import mc.alk.arena.events.matches.MatchTimeExpiredMessageEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.ArenaEventHandler;
 import mc.alk.arena.objects.events.ArenaEventPriority;
-import mc.alk.arena.objects.messaging.MatchMessager;
+import mc.alk.arena.objects.messaging.MatchMessenger;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
 import mc.alk.arena.objects.scoreboard.SAPIDisplaySlot;
@@ -30,7 +30,7 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 
 	final ArenaObjective scores;
 	@Setter Integer capturesToWin;
-	MatchMessager mmh;
+	MatchMessenger mmh;
 	@Setter Map<ArenaTeam, Flag> flags;
 
 	public FlagVictory(Match _match) {
@@ -95,12 +95,12 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 		scores.setAllPoints(match, 0);
 	}
 
-	public Integer addScore(ArenaTeam team, ArenaPlayer ap) {
+	public int addScore(ArenaTeam team, ArenaPlayer ap) {
 		scores.addPoints(ap, 1);
 		return scores.addPoints(team, 1);
 	}
 
-	@ArenaEventHandler(priority=ArenaEventPriority.HIGHEST)
+	@ArenaEventHandler( priority = ArenaEventPriority.HIGHEST )
 	public void onMatchFindCurrentLeaderEvent(MatchFindCurrentLeaderEvent event){
 		event.setResult(scores.getMatchResult(match));
 	}
@@ -145,7 +145,7 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 		event.setMatchMessage( mmh.getMessage( node, map ) );
 	}
 
-	public void setMessageHandler( MatchMessager _mmh ) { mmh = _mmh; }
+	public void setMessageHandler( MatchMessenger _mmh ) { mmh = _mmh; }
 	@Override
 	public List<ArenaTeam> getLeaders() { return scores.getLeaders(); }
 	@Override

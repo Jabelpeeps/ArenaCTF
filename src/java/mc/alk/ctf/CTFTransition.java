@@ -15,26 +15,21 @@ public enum CTFTransition implements CompetitionTransition {
     String name;
     int globalOrdinal;
 
-    CTFTransition(String name) {
-        globalOrdinal = StateController.register(this.getClass());
-        this.name = name;
+    CTFTransition(String _name) {
+        globalOrdinal = StateController.register( getClass() );
+        name = _name;
     }
 
     public static CTFTransition fromString(String str){
         str = str.toUpperCase();
-        try{
+        try {
             return CTFTransition.valueOf(str);
         } catch (Exception e){
             return null;
         }
     }
-
     @Override
-    public int globalOrdinal() {
-        return globalOrdinal;
-    }
+    public int globalOrdinal() { return globalOrdinal; }
     @Override
-    public String toString(){
-        return name;
-    }
+    public String toString() { return name; }
 }
