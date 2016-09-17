@@ -41,7 +41,7 @@ import mc.alk.arena.util.TeamUtil;
 public class CTFArena extends Arena {
     public static final boolean DEBUG = true;
 
-    private static final long FLAG_RESPAWN_TIMER = 20*15L;
+    private static final long FLAG_RESPAWN_TIMER = 20 * 15L;
     private static final long TIME_BETWEN_CAPTURES = 2000;
 
     /**
@@ -67,11 +67,11 @@ public class CTFArena extends Arena {
     public void onOpen(){
         mmh = getMatch().getMatchMessager();
         resetVars();
-        getMatch().addVictoryCondition(scores);
+        match.addVictoryCondition(scores);
     }
 
     private void resetVars(){
-        VictoryCondition vc = getMatch().getVictoryCondition(FlagVictory.class);
+        VictoryCondition vc = match.getVictoryCondition( FlagVictory.class );
         
         scores = (FlagVictory) (vc != null ? vc 
                                            : new FlagVictory(getMatch()));
@@ -95,19 +95,15 @@ public class CTFArena extends Arena {
             return;
         }
 
-        /// Set all scores to 0
-        /// Set up flag locations
         int i = 0;
         for ( Location l : flagSpawns.values() ) {
             l = l.clone();
             ArenaTeam t = _teams.get(i);
-            /// Create our flag
             ItemStack is = TeamUtil.getTeamHead(i);
-            Flag f = new Flag(t,is,l);
-            teamFlags.put(t, f);
+            Flag f = new Flag( t, is, l );
+            teamFlags.put( t, f );
 
-            /// add to our materials
-            flagMaterials.add(is.getType());
+            flagMaterials.add( is.getType() );
 
             spawnFlag(f);
 
@@ -115,7 +111,7 @@ public class CTFArena extends Arena {
             if (DEBUG) Log.info("Team t = " + t + " flag spawned at:- " + l.toString() );
         }
         scores.setFlags(teamFlags);
-        /// Schedule flame effects
+
         timerid = Bukkit.getScheduler().scheduleSyncRepeatingTask( CTF.getSelf(), 
                 () -> {
                         boolean extraeffects = (runcount++ % 2 == 0);
@@ -132,7 +128,6 @@ public class CTFArena extends Arena {
                         }
                 }, 20L, 20L );
 
-        /// Schedule flag checks
         flagCheckId = Bukkit.getScheduler().scheduleSyncRepeatingTask( CTF.getSelf(), 
                 () -> { 
                         for ( Flag flag : flags.values() ) {
@@ -142,7 +137,6 @@ public class CTFArena extends Arena {
                         }
                 }, 0L, 6 * 20L );
 
-        /// Schedule compass Updates
         compassRespawnId = Bukkit.getScheduler().scheduleSyncRepeatingTask(
                                 CTF.getSelf(), () -> updateCompassLocations() , 0L, 5 * 20L );
     }
@@ -157,16 +151,16 @@ public class CTFArena extends Arena {
                 continue;
             for (ArenaPlayer ap: _teams.get(i).getLivingPlayers()){
                 Player p = ap.getPlayer();
-                if (p != null && p.isOnline()){
-                    p.setCompassTarget(f.getCurrentLocation());
+                if ( p != null && p.isOnline() ) {
+                    p.setCompassTarget( f.getCurrentLocation() );
                 }
             }
         }
     }
 
-    private Item spawnItem(Location l, ItemStack is) {
-        Item item = l.getBlock().getWorld().dropItem(l,is);
-        item.setVelocity(new Vector(0,0,0));
+    private Item spawnItem( Location l, ItemStack is ) {
+        Item item = l.getBlock().getWorld().dropItem( l, is );
+        item.setVelocity( new Vector(0,0,0) );
         return item;
     }
 
@@ -180,52 +174,50 @@ public class CTFArena extends Arena {
     @ArenaEventHandler
     public void onPlayerDropItem(PlayerDropItemEvent event){
         if ( event.isCancelled() ) return;
-        if ( !flags.containsKey( event.getPlayer().getEntityId() ) ) return;
+        if ( !flags.containsKey( event.getItemDrop().getEntityId() ) ) return;
         
         Item item = event.getItemDrop();
         ItemStack is = item.getItemStack();
-        Flag flag = flags.get( event.getPlayer().getEntityId() );
+        Flag flag = flags.get( event.getItemDrop().getEntityId() );
         
-        if (flag.sameFlag(is)) /// Player is dropping a flag
-            playerDroppedFlag(flag, item);
+        if ( flag.sameFlag( is ) ) /// Player is dropping a flag
+            playerDroppedFlag( flag, item );
     }
 
     @ArenaEventHandler
-    public void onPlayerPickupItem(PlayerPickupItemEvent event){
-        if ( !flags.containsKey( event.getItem().getEntityId() ) ) return;
-        
+    public void onPlayerPickupItem( PlayerPickupItemEvent event ) {
         int id = event.getItem().getEntityId();
+        
+        if ( !flags.containsKey( id ) ) return;
+        
         Player p = event.getPlayer();
         ArenaTeam t = getTeam(p);
-        Flag flag = flags.get(id);
+        Flag flag = flags.get( id );
 
-        Map<String,String> params = getCaptureParams();
-        params.put("{player}",p.getDisplayName());
-        /// for some reason if I do flags.remove here... event.setCancelled(true) doesnt work!!!! oO
-        /// If anyone can explain this... I would be ecstatic, seriously.
-        if (flag.team.equals(t)){
+        Map<String,String> cParams = getCaptureParams();
+        cParams.put( "{player}", p.getDisplayName() );
+        
+        if ( flag.team.equals( t ) ) {
             event.setCancelled(true);
-            if (!flag.isHome()) {  /// Return the flag back to its home location
-                playerReturnedFlag(p, flag);
+            if ( !flag.isHome() ) {  /// Return the flag back to its home location
+                playerReturnedFlag( p, flag );
                 event.getItem().remove();
-                t.sendMessage(mmh.getMessage("CaptureTheFlag.player_returned_flag", params));
+                t.sendMessage( mmh.getMessage( "CaptureTheFlag.player_returned_flag", cParams ) );
             }
         } 
         else {
             /// Give the enemy the flag
-            playerPickedUpFlag(p, flag);
-
+            playerPickedUpFlag( p, flag );
             ArenaTeam fteam = flag.team;
 
-            for (ArenaTeam team : getTeams()){
-                if (team.equals(t))
-                    team.sendMessage(mmh.getMessage("CaptureTheFlag.taken_enemy_flag", params));
-                else if (team.equals(fteam))
-                    team.sendMessage(mmh.getMessage("CaptureTheFlag.taken_your_flag", params));
+            for ( ArenaTeam team : getTeams() ) {
+                if ( team.equals( t ) )
+                    team.sendMessage( mmh.getMessage( "CaptureTheFlag.taken_enemy_flag", cParams ) );
+                else if ( team.equals( fteam ) )
+                    team.sendMessage( mmh.getMessage( "CaptureTheFlag.taken_your_flag", cParams ) );
             }
         }
     }
-
 
     private Map<String, String> getCaptureParams() {
         Map<String,String> _params = new HashMap<>();
@@ -234,10 +226,10 @@ public class CTFArena extends Arena {
         return _params;
     }
 
-    @ArenaEventHandler(needsPlayer=false)
+    @ArenaEventHandler( needsPlayer = false )
     public void onItemDespawn(ItemDespawnEvent event){
-        if (flags.containsKey(event.getEntity().getEntityId())){
-            event.setCancelled(true);
+        if ( flags.containsKey( event.getEntity().getEntityId() ) ) {
+            event.setCancelled( true );
         }
     }
 
@@ -247,7 +239,6 @@ public class CTFArena extends Arena {
         if (flag == null)
             return;
         /// we have a flag holder, drop the flag
-        event.getDrops();
         List<ItemStack> items = event.getDrops();
         for (ItemStack is : items){
             if (flag.sameFlag(is)){
@@ -356,7 +347,7 @@ public class CTFArena extends Arena {
     }
 
     private void playerDroppedFlag(Flag flag, Item item) {
-        if (flag.getEntity() instanceof Player)
+        if ( flag.getEntity() instanceof Player)
             performTransition(CTFTransition.ONFLAGDROP,PlayerController.toArenaPlayer((Player)flag.getEntity()));
 
         flags.remove(flag.entity.getEntityId());
@@ -385,8 +376,8 @@ public class CTFArena extends Arena {
                 () -> {
                         spawnFlag(flag);
                         ArenaTeam team = flag.getTeam();
-                        Map<String,String> params = getCaptureParams();
-                        team.sendMessage(mmh.getMessage("CaptureTheFlag.returned_flag",params));           
+                        Map<String,String> cParams = getCaptureParams();
+                        team.sendMessage(mmh.getMessage("CaptureTheFlag.returned_flag",cParams));           
                 }, FLAG_RESPAWN_TIMER);
         
         respawnTimers.put(flag, _timerid);

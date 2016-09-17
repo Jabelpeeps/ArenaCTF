@@ -14,11 +14,12 @@ import mc.alk.arena.util.SerializerUtil;
 @RequiredArgsConstructor
 public class Flag {
     @Getter final ArenaTeam team; 
-    final ItemStack is; /// what type of item is our flag
-    @Getter final Location homeLocation; /// our spawn location
+    final ItemStack is;
+    @Getter final Location homeLocation;
     
 	static int count = 0;
 	final int id = count++; 
+	
 	@Getter @Setter Entity entity; /// What is our flag (item or carried by player)
 	@Getter @Setter boolean home = true; /// is our flag at home
 

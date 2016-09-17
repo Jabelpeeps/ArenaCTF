@@ -10,7 +10,7 @@ import mc.alk.arena.util.MessageUtil;
 
 
 
-public class CTFExecutor extends CustomCommandExecutor{
+public class CTFExecutor extends CustomCommandExecutor {
 
 	@MCCommand( cmds = {"addFlag"}, admin = true )
 	public static boolean addFlag( Player sender, CTFArena arena, Integer index ) {
@@ -19,7 +19,7 @@ public class CTFExecutor extends CustomCommandExecutor{
 			return MessageUtil.sendMessage( sender, "&2index must be between [1-100]!" );
 
 		arena.addFlag(index -1, sender.getLocation());
-		ArenaSerializer.saveArenas(CTF.getSelf());
+		ArenaSerializer.saveArenas( CTF.getSelf() );
 		
 		return MessageUtil.sendMessage( sender, "&2Team &6" + index + "&2 flag added!" );
 	}
