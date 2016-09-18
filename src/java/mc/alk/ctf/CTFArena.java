@@ -27,6 +27,7 @@ import org.bukkit.util.Vector;
 
 import mc.alk.arena.controllers.PlayerController;
 import mc.alk.arena.controllers.PlayerStoreController;
+import mc.alk.arena.controllers.Scheduler;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.MatchState;
 import mc.alk.arena.objects.arenas.Arena;
@@ -53,7 +54,7 @@ public class CTFArena extends Arena {
     /// The following variables should be reinitialized and set up every match
     FlagVictory scores;
     final Map<Integer, Flag> flags = new ConcurrentHashMap<>();
-    final ConcurrentHashMap<ArenaTeam, Flag> teamFlags = new ConcurrentHashMap<>();
+    final Map<ArenaTeam, Flag> teamFlags = new ConcurrentHashMap<>();
     public static int capturesToWin = 3;
     int runcount = 0;
     Integer timerid, compassRespawnId, flagCheckId;
@@ -94,7 +95,6 @@ public class CTFArena extends Arena {
             getMatch().cancelMatch();
             return;
         }
-
         int i = 0;
         for ( Location l : flagSpawns.values() ) {
             l = l.clone();
@@ -172,7 +172,7 @@ public class CTFArena extends Arena {
     }
 
     @ArenaEventHandler
-    public void onPlayerDropItem(PlayerDropItemEvent event){
+    public void onPlayerDropItem( PlayerDropItemEvent event ) {
         if ( event.isCancelled() ) return;
         if ( !flags.containsKey( event.getItemDrop().getEntityId() ) ) return;
         
@@ -257,21 +257,21 @@ public class CTFArena extends Arena {
 
     @ArenaEventHandler
     public void onPlayerMove(PlayerMoveEvent event){
-        if (event.isCancelled()) return;
+        if ( event.isCancelled() ) return;
         
         /// Check to see if they moved a block, or if they are holding a flag
-        if (!(event.getFrom().getBlockX() != event.getTo().getBlockX()
-                || event.getFrom().getBlockY() != event.getTo().getBlockY()
-                || event.getFrom().getBlockZ() != event.getTo().getBlockZ())
-                || !flags.containsKey(event.getPlayer().getEntityId())){
+        if (    !flags.containsKey( event.getPlayer().getEntityId() ) 
+                ||  !(  event.getFrom().getBlockX() != event.getTo().getBlockX()
+                     || event.getFrom().getBlockY() != event.getTo().getBlockY()
+                     || event.getFrom().getBlockZ() != event.getTo().getBlockZ() ) ) {
             return;
         }
         if ( getState() != MatchState.ONSTART ) return;
         
-        ArenaTeam t = getTeam(event.getPlayer());
+        ArenaTeam t = getTeam( event.getPlayer() );
         Flag f = teamFlags.get(t);
-        if (f.isHome() && nearLocation(f.getCurrentLocation(),event.getTo())){
-            Flag capturedFlag = flags.get(event.getPlayer().getEntityId());
+        if ( !f.isHome() && nearLocation( f.getCurrentLocation(), event.getTo() ) ) {
+            Flag capturedFlag = flags.get( event.getPlayer().getEntityId() );
             Long lastc = lastCapture.get(t);
             if (lastc != null && System.currentTimeMillis() - lastc < TIME_BETWEN_CAPTURES) return;
             
@@ -285,22 +285,22 @@ public class CTFArena extends Arena {
                 spawnFlag(capturedFlag);
             }
             String score = scores.getScoreString();
-            Map<String,String> params = getCaptureParams();
-            params.put("{team}", t.getDisplayName());
-            params.put("{score}", score);
+            Map<String,String> _params = getCaptureParams();
+            _params.put("{team}", t.getDisplayName());
+            _params.put("{score}", score);
 
-            performTransition(CTFTransition.ONFLAGCAPTURE,ap);
-            mmh.sendMessage("CaptureTheFlag.teamscored",params);
+            performTransition( CTFTransition.ONFLAGCAPTURE, ap );
+            mmh.sendMessage( "CaptureTheFlag.teamscored", _params );
         }
     }
 
 
     @ArenaEventHandler
     public void onBlockPlace(BlockPlaceEvent event){
-        if (!flags.containsKey(event.getPlayer().getEntityId())) return;
+        if ( !flags.containsKey( event.getPlayer().getEntityId() ) ) return;
 
-        if (flagMaterials.contains(event.getBlock().getType())){
-            event.setCancelled(true);}
+        if ( flagMaterials.contains( event.getBlock().getType() ) )
+            event.setCancelled( true );
     }
 
     private void cancelTimers(){
@@ -319,92 +319,89 @@ public class CTFArena extends Arena {
     }
 
     private void removeFlags() {
-        for (Flag f: flags.values()){
-            removeFlag(f);
-        }
+        for ( Flag f : flags.values() ) removeFlag(f);
     }
 
-    private void removeFlag(Flag flag){
-        if (flag.entity instanceof Player)
-            PlayerStoreController.removeItem(PlayerController.toArenaPlayer((Player) flag.entity), flag.is);
+    private void removeFlag( Flag flag ) {
+        if ( flag.getEntity() instanceof Player )
+            PlayerStoreController.removeItem( PlayerController.toArenaPlayer((Player) flag.entity), flag.is );
         else
-            flag.entity.remove();
+            flag.getEntity().remove();
     }
-    private void playerReturnedFlag(Player player, Flag flag) {
-        flags.remove(flag.entity.getEntityId());
+    
+    private void playerReturnedFlag( Player player, Flag flag ) {
+        flags.remove( flag.getEntity().getEntityId() );
         spawnFlag(flag);
-        performTransition(CTFTransition.ONFLAGRETURN,PlayerController.toArenaPlayer(player));
+        performTransition( CTFTransition.ONFLAGRETURN, PlayerController.toArenaPlayer( player ) );
     }
 
-    private void playerPickedUpFlag(Player player, Flag flag) {
-        flags.remove(flag.entity.getEntityId());
-        flag.setEntity(player);
-        flag.setHome(false);
-        flags.put(player.getEntityId(), flag);
-        cancelFlagRespawnTimer(flag);
-        if (flag.getEntity() instanceof Player)
-            performTransition(CTFTransition.ONFLAGPICKUP,PlayerController.toArenaPlayer(player));
+    private void playerPickedUpFlag( Player player, Flag flag ) {
+        flags.remove( flag.entity.getEntityId() );
+        flag.setEntity( player );
+        flag.setHome( false );
+        flags.put( player.getEntityId(), flag );
+        cancelFlagRespawnTimer( flag );
+        performTransition( CTFTransition.ONFLAGPICKUP, PlayerController.toArenaPlayer( player ) );
     }
 
-    private void playerDroppedFlag(Flag flag, Item item) {
-        if ( flag.getEntity() instanceof Player)
-            performTransition(CTFTransition.ONFLAGDROP,PlayerController.toArenaPlayer((Player)flag.getEntity()));
+    private void playerDroppedFlag( Flag flag, Item item ) {
+        if ( flag.getEntity() instanceof Player )
+            performTransition( CTFTransition.ONFLAGDROP, PlayerController.toArenaPlayer( (Player) flag.getEntity() ) );
 
-        flags.remove(flag.entity.getEntityId());
-        flag.setEntity(item);
-        flags.put(item.getEntityId(), flag);
-        startFlagRespawnTimer(flag);
+        flags.remove( flag.getEntity().getEntityId() );
+        flag.setEntity( item );
+        flags.put( item.getEntityId(), flag );
+        startFlagRespawnTimer( flag );
     }
 
-    private void spawnFlag(Flag flag){
-        cancelFlagRespawnTimer(flag);
+    private void spawnFlag( Flag flag ) {
+        cancelFlagRespawnTimer( flag );
         Entity ent = flag.getEntity();
         
-        if (ent != null && ent instanceof Item) ent.remove();
-        if (ent != null) flags.remove(ent.getEntityId());
+        if ( ent != null && ent instanceof Item ) ent.remove();
+        if ( ent != null ) flags.remove( ent.getEntityId() );
         
-        Location l = flag.getHomeLocation();
-        Item item = spawnItem(l,flag.is);
-        flag.setEntity(item);
-        flag.setHome(true);
-        flags.put(item.getEntityId(), flag);
+        Item item = spawnItem( flag.getHomeLocation(), flag.is );
+        flag.setEntity( item );
+        flag.setHome( true );
+        flags.put( item.getEntityId(), flag );
     }
 
     private void startFlagRespawnTimer( Flag flag) {
-        cancelFlagRespawnTimer(flag);
-        Integer _timerid = Bukkit.getScheduler().scheduleSyncDelayedTask(CTF.getSelf(), 
-                () -> {
-                        spawnFlag(flag);
-                        ArenaTeam team = flag.getTeam();
-                        Map<String,String> cParams = getCaptureParams();
-                        team.sendMessage(mmh.getMessage("CaptureTheFlag.returned_flag",cParams));           
-                }, FLAG_RESPAWN_TIMER);
+        cancelFlagRespawnTimer( flag );
+        Integer _timerid = Scheduler.scheduleSynchronousTask( CTF.getSelf(), 
+                () -> { spawnFlag( flag );
+                        flag.getTeam()
+                            .sendMessage( mmh.getMessage( "CaptureTheFlag.returned_flag", getCaptureParams() ) );           
+                }, FLAG_RESPAWN_TIMER );
         
-        respawnTimers.put(flag, _timerid);
+        respawnTimers.put( flag, _timerid );
     }
 
-    private void cancelFlagRespawnTimer(Flag flag){
-        Integer _timerid = respawnTimers.get(flag);
-        if (_timerid != null)
-            Bukkit.getScheduler().cancelTask(_timerid);
+    private void cancelFlagRespawnTimer( Flag flag ) {
+        Integer _timerid = respawnTimers.get( flag );
+        if ( _timerid != null )
+            Bukkit.getScheduler().cancelTask( _timerid );
     }
 
-    private synchronized boolean teamScored(ArenaTeam team, ArenaPlayer player) {
+    private synchronized boolean teamScored( ArenaTeam team, ArenaPlayer player ) {
         int teamScore = scores.addScore(team,player);
 
-        if (teamScore >= capturesToWin ){
+        if ( teamScore >= capturesToWin ) {
             setWinner(team);
             return true;
         }
         return false;
     }
 
-    public static boolean nearLocation(final Location l1, final Location l2){
-        return l1.getWorld().getUID().equals(l2.getWorld().getUID()) && Math.abs(l1.getX() - l2.getX()) < 2
-                && Math.abs(l1.getZ() - l2.getZ()) < 2 && Math.abs(l1.getBlockY() - l2.getBlockY()) < 3;
+    private static boolean nearLocation( Location l1, Location l2 ) {
+        return l1.getWorld().getUID().equals( l2.getWorld().getUID() ) 
+                && Math.abs( l1.getX() - l2.getX() ) < 2
+                && Math.abs( l1.getZ() - l2.getZ() ) < 2 
+                && Math.abs( l1.getBlockY() - l2.getBlockY() ) < 3;
     }
 
-    public void addFlag( Integer i, Location location ) {
+    void addFlag( Integer i, Location location ) {
         Location l = location.clone();
         l.setX(location.getBlockX()+0.5);
         l.setY(location.getBlockY()+2);
@@ -412,8 +409,8 @@ public class CTFArena extends Arena {
         flagSpawns.put(i, l);
     }
 
-    public Map<Integer, Location> getFlagLocations() { return flagSpawns; }
-    public void clearFlags() { flagSpawns.clear(); }
+    Map<Integer, Location> getFlagLocations() { return flagSpawns; }
+    void clearFlags() { flagSpawns.clear(); }
     @Override
     public boolean valid() { return super.valid() && flagSpawns.size() >= 2; }
 

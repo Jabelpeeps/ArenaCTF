@@ -4,7 +4,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import lombok.Getter;
-import mc.alk.arena.BattleArena;
 import mc.alk.arena.controllers.APIRegistrationController;
 import mc.alk.arena.controllers.StateController;
 import mc.alk.arena.objects.victoryconditions.VictoryType;
@@ -22,11 +21,7 @@ public class CTF extends JavaPlugin{
 		loadConfig();
 		VictoryType.register( FlagVictory.class, this );
         StateController.register( CTFTransition.class );
-        APIRegistrationController.registerCompetition( this, 
-                                                       "CaptureTheFlag", 
-                                                       "ctf", 
-                                                       BattleArena.createArenaFactory( CTFArena.class ), 
-                                                       new CTFExecutor() );
+        APIRegistrationController.registerCompetition( this, "CaptureTheFlag", "ctf", CTFArena.class, new CTFExecutor() );
         Log.info("[" + getName()+ "] v" + getDescription().getVersion()+ " enabled!");
 	}
 
