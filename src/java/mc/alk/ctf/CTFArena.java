@@ -66,7 +66,7 @@ public class CTFArena extends Arena {
 
     @Override
     public void onOpen(){
-        mmh = getMatch().getMatchMessager();
+        mmh = match.getMatchMessager();
         resetVars();
         match.addVictoryCondition(scores);
     }
@@ -74,8 +74,8 @@ public class CTFArena extends Arena {
     private void resetVars(){
         VictoryCondition vc = match.getVictoryCondition( FlagVictory.class );
         
-        scores = (FlagVictory) (vc != null ? vc 
-                                           : new FlagVictory(getMatch()));
+        scores = ( vc != null ? (FlagVictory) vc 
+                              : new FlagVictory( match ) );
         
         scores.setCapturesToWin(capturesToWin);
         scores.setMessageHandler(mmh);
@@ -90,25 +90,23 @@ public class CTFArena extends Arena {
     @Override
     public void onStart(){
         List<ArenaTeam> _teams = getTeams();
-        if (flagSpawns.size() < _teams.size()){
+        if ( flagSpawns.size() < _teams.size() ) {
             Log.err( "Cancelling CTF as there " + _teams.size() + " teams but only " + flagSpawns.size() + " flags" );
-            getMatch().cancelMatch();
+            match.cancelMatch();
             return;
         }
         int i = 0;
-        for ( Location l : flagSpawns.values() ) {
-            l = l.clone();
-            ArenaTeam t = _teams.get(i);
-            ItemStack is = TeamUtil.getTeamHead(i);
-            Flag f = new Flag( t, is, l );
-            teamFlags.put( t, f );
+        for ( Location loc : flagSpawns.values() ) {
+            loc = loc.clone();
+            ArenaTeam team = _teams.get(i);
+            ItemStack is = TeamUtil.getTeamHead(i++);
+            Flag flag = new Flag( team, is, loc );
+            teamFlags.put( team, flag );
 
             flagMaterials.add( is.getType() );
-
-            spawnFlag(f);
-
-            i++;
-            if (DEBUG) Log.info("Team t = " + t + " flag spawned at:- " + l.toString() );
+            spawnFlag(flag);
+            
+            if (DEBUG) Log.info("Team t = " + team + " flag spawned at:- " + loc.toString() );
         }
         scores.setFlags(teamFlags);
 
@@ -174,13 +172,12 @@ public class CTFArena extends Arena {
     @ArenaEventHandler
     public void onPlayerDropItem( PlayerDropItemEvent event ) {
         if ( event.isCancelled() ) return;
-        if ( !flags.containsKey( event.getItemDrop().getEntityId() ) ) return;
+        if ( !flags.containsKey( event.getPlayer().getEntityId() ) ) return;
         
         Item item = event.getItemDrop();
-        ItemStack is = item.getItemStack();
-        Flag flag = flags.get( event.getItemDrop().getEntityId() );
+        Flag flag = flags.get( item.getEntityId() );
         
-        if ( flag.sameFlag( is ) ) /// Player is dropping a flag
+        if ( flag.sameFlag( item.getItemStack() ) ) /// Player is dropping a flag
             playerDroppedFlag( flag, item );
     }
 
@@ -266,7 +263,8 @@ public class CTFArena extends Arena {
                      || event.getFrom().getBlockZ() != event.getTo().getBlockZ() ) ) {
             return;
         }
-        if ( getState() != MatchState.ONSTART ) return;
+        event.getTo().distanceSquared( event.getFrom() );
+        if ( getState() != MatchState.INGAME ) return;
         
         ArenaTeam t = getTeam( event.getPlayer() );
         Flag f = teamFlags.get(t);

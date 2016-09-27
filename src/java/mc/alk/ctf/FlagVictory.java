@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import java.util.TreeMap;
 
 import org.bukkit.ChatColor;
@@ -46,22 +47,18 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 		resetScores();
 	}
 
-	public String getScoreString() {
+	public String getScoreString() {       
+        List<ArenaTeam> teams = match.getTeams();
+        if ( teams == null ) return "";
+        
 		Map<String,String> map = new HashMap<>();
 		map.put( "{prefix}", match.getParams().getPrefix() );
 		
 		String teamstr = mmh.getMessage( "CaptureTheFlag.teamscore" );
 		String separator = mmh.getMessage( "CaptureTheFlag.teamscore_separator" );
-		StringBuilder sb = new StringBuilder();
-		
-		List<ArenaTeam> teams = match.getTeams();
-		if (teams == null)
-			return "";
-		boolean first = true;
+		StringJoiner joiner = new StringJoiner( separator );
 		
         for ( ArenaTeam team : teams ) {
-            
-            if (!first) sb.append(separator);
             
             Flag f = flags.get(team);
             Map<String, String> map2 = new HashMap<>();
@@ -82,12 +79,11 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
                 holder = mmh.getMessage("CaptureTheFlag.flagperson") + p.getDisplayName();
             }
             map2.put("{flagholder}", holder);
-            String str = mmh.format(teamstr, map2);
-            sb.append(str);
-            first = false;
+            
+            joiner.add( mmh.format(teamstr, map2) );
         }
-		map.put("{teamscores}",sb.toString());
-		return mmh.getMessage("CaptureTheFlag.score",map);
+		map.put( "{teamscores}", joiner.toString() );
+		return mmh.getMessage( "CaptureTheFlag.score", map );
 	}
 
 	public void resetScores(){
