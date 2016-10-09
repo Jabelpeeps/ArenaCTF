@@ -26,8 +26,12 @@ public class Flag {
 	public Location getCurrentLocation() { return entity.getLocation(); }
     public boolean isValid() { return entity.isValid(); }
 
-	public boolean sameFlag(ItemStack is2) {
-		return is.getType() == is2.getType() && is.getDurability() == is2.getDurability();
+	public boolean sameFlag( ItemStack is2 ) {
+	    if ( is.getType() != is2.getType() ) return false;
+	    if ( is.hasItemMeta() ) 
+	        return is.getItemMeta().equals( is2.getItemMeta() );
+	    
+		return is.getDurability() == is2.getDurability();
 	}
 
 	@Override
