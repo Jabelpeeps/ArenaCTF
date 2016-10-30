@@ -49,7 +49,7 @@ public class CTFArena extends Arena {
      * Save these flag spawns with the rest of the arena information
      */
     @Persist
-    final HashMap<Integer,Location> flagSpawns = new HashMap<>();
+    final Map<Integer,Location> flagSpawns = new HashMap<>();
 
     /// The following variables should be reinitialized and set up every match
     FlagVictory scores;
@@ -117,11 +117,7 @@ public class CTFArena extends Arena {
                             Location l = flag.getCurrentLocation();
                             l.getWorld().playEffect( l, Effect.MOBSPAWNER_FLAMES, 0 );
                             if ( extraeffects ) {
-                                l = l.clone()
-                                     .add( rand.nextInt(4) - 2, rand.nextInt(2) - 1, rand.nextInt(4) - 2 );
-//                                l.setX( l.getX() + rand.nextInt(4) - 2 );
-//                                l.setZ( l.getZ() + rand.nextInt(4) - 2 );
-//                                l.setY( l.getY() + rand.nextInt(2) - 1 );
+                                l = l.clone().add( rand.nextInt(4) - 2, rand.nextInt(2) - 1, rand.nextInt(4) - 2 );
                                 l.getWorld().playEffect( l, Effect.MOBSPAWNER_FLAMES, 0 );
                             }
                         }
@@ -180,8 +176,7 @@ public class CTFArena extends Arena {
         
         Item item = event.getItemDrop();
         
-        if ( flag.sameFlag( 
-                     item.getItemStack() ) ) 
+        if ( flag.sameFlag( item.getItemStack() ) ) 
             playerDroppedFlag( flag, item );
     }
 
@@ -245,7 +240,7 @@ public class CTFArena extends Arena {
             if ( flag.sameFlag(is) ) {
                 int amt = is.getAmount();
                 if ( amt > 1 )
-                    is.setAmount( amt - 1 );
+                    is.setAmount( 1 );
                 else
                     is.setType( Material.AIR );
                 break;
@@ -270,25 +265,26 @@ public class CTFArena extends Arena {
 //        event.getTo().distanceSquared( event.getFrom() );
         if ( getState() != MatchState.INGAME ) return;
         
-        ArenaTeam t = getTeam( event.getPlayer() );
-        Flag f = teamFlags.get(t);
-        if ( !f.isHome() && nearLocation( f.getCurrentLocation(), event.getTo() ) ) {
-            Flag capturedFlag = flags.get( event.getPlayer().getEntityId() );
-            Long lastc = lastCapture.get(t);
+        ArenaTeam playerTeam = getTeam( event.getPlayer() );
+        Flag teamFlag = teamFlags.get( playerTeam );
+        Flag capturedFlag = flags.get( event.getPlayer().getEntityId() );
+        
+        if ( !capturedFlag.isHome() && nearLocation( teamFlag.getHomeLocation(), event.getTo() ) ) {
+            Long lastc = lastCapture.get( playerTeam );
             if (lastc != null && System.currentTimeMillis() - lastc < TIME_BETWEN_CAPTURES) return;
             
-            lastCapture.put(t, System.currentTimeMillis());
+            lastCapture.put( playerTeam, System.currentTimeMillis() );
             
             ArenaPlayer ap = PlayerController.toArenaPlayer( event.getPlayer() );
-            event.getPlayer().getInventory().remove( f.is );
+            event.getPlayer().getInventory().remove( teamFlag.is );
  
-            if ( !teamScored( t, ap ) ) {
+            if ( !teamScored( playerTeam, ap ) ) {
                 removeFlag( capturedFlag );
                 spawnFlag( capturedFlag );
             }
             String score = scores.getScoreString();
             Map<String,String> _params = getCaptureParams();
-            _params.put( "{team}", t.getDisplayName() );
+            _params.put( "{team}", playerTeam.getDisplayName() );
             _params.put( "{score}", score );
 
             performTransition( CTFTransition.ONFLAGCAPTURE, ap );
@@ -314,7 +310,7 @@ public class CTFArena extends Arena {
             Bukkit.getScheduler().cancelTask(compassRespawnId);
             compassRespawnId = null;
         }
-        if (flagCheckId != null){
+        if (flagCheckId != null) {
             Bukkit.getScheduler().cancelTask(flagCheckId);
             flagCheckId = null;
         }
@@ -409,7 +405,7 @@ public class CTFArena extends Arena {
         flagSpawns.put(i, l);
     }
 
-    Map<Integer, Location> getFlagLocations() { return flagSpawns; }
+//    Map<Integer, Location> getFlagLocations() { return flagSpawns; }
     void clearFlags() { flagSpawns.clear(); }
     @Override
     public boolean valid() { return super.valid() && flagSpawns.size() >= 2; }

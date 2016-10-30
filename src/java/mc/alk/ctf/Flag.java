@@ -35,14 +35,14 @@ public class Flag {
 	}
 
 	@Override
-	public boolean equals(Object other) {
-		if (this == other) return true;
-		if (!(other instanceof Flag)) return false;
+	public boolean equals( Object other ) {
+		if ( this == other ) return true;
+		if ( !(other instanceof Flag ) ) return false;
 		return id == ((Flag) other).id;
 	}
 
 	@Override
-	public int hashCode() { return id;}
+	public int hashCode() { return id; }
 
 	@Override
 	public String toString(){
